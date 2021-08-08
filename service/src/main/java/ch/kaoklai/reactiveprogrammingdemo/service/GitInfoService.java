@@ -1,7 +1,6 @@
 package ch.kaoklai.reactiveprogrammingdemo.service;
 
 import ch.kaoklai.reactiveprogrammingdemo.model.GitInfo;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -13,7 +12,6 @@ import reactor.core.publisher.Flux;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 public class GitInfoService {
 
 	public Flux<GitInfo> findGitInfo() {

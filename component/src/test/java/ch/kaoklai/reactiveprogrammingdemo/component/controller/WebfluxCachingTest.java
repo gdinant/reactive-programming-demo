@@ -19,19 +19,19 @@ public class WebfluxCachingTest {
 	private GitInfoService gitInfoService;
 
 	@Test
-	void testCachingViaWebService() throws InterruptedException {
-		// given
+	void testCachingViaWebService() {
+
 		var client = WebClient.builder().baseUrl("http://localhost:9000").build();
 
 		retrieveGitInfo(client, 1);
-		Thread.sleep(1000);
+
 		retrieveGitInfo(client, 2);
+
 		retrieveGitInfo(client, 3);
-		Thread.sleep(5000);
-		retrieveGitInfo(client, 4);
 	}
 
 	private void retrieveGitInfo(WebClient client, int id) {
+
 		client.get().uri("/git-info")
 			.retrieve()
 			.bodyToFlux(GitInfo.class)
