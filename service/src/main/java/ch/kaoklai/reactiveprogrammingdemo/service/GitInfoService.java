@@ -14,7 +14,9 @@ import reactor.core.publisher.Flux;
 @Service
 public class GitInfoService {
 
-	public Flux<GitInfo> findGitInfo() {
+	private Flux<GitInfo> gitInfos;
+
+	public GitInfoService() {
 
 		var file = DataBufferUtils.read(
 			new DefaultResourceLoader().getResource("file.json"),
@@ -25,12 +27,18 @@ public class GitInfoService {
 		var jacksonDecoder = new Jackson2JsonDecoder();
 		jacksonDecoder.setMaxInMemorySize(30 * 1024 * 1024);
 
-		return jacksonDecoder
+		this.gitInfos = jacksonDecoder
 			.decodeToMono(file, ResolvableType.forClass(GitInfo[].class), null, null)
 			.doOnNext(c -> log.info("File is loaded!"))
 			.map(i -> ((GitInfo[]) i))
 			.flatMapMany(Flux::fromArray)
 			.cache();
+
+	}
+
+	public Flux<GitInfo> findGitInfo() {
+
+		return gitInfos;
 	}
 
 }
