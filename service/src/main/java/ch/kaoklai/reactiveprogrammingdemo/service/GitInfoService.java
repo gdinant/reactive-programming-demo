@@ -25,7 +25,7 @@ public class GitInfoService {
 		);
 
 		var jacksonDecoder = new Jackson2JsonDecoder();
-		jacksonDecoder.setMaxInMemorySize(30 * 1024 * 1024);
+		jacksonDecoder.setMaxInMemorySize(60 * 1024 * 1024);
 
 		this.gitInfos = jacksonDecoder
 			.decodeToMono(file, ResolvableType.forClass(GitInfo[].class), null, null)

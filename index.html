@@ -34,6 +34,22 @@
 				}
 			});
 
+		function splitStream(splitOn) {
+			let buffer = '';
+
+			return new TransformStream({
+				transform(chunk, controller) {
+					buffer += chunk;
+					const parts = buffer.split(splitOn);
+					parts.slice(0, -1).forEach(part => controller.enqueue(part));
+					buffer = parts[parts.length - 1];
+				},
+				flush(controller) {
+					if (buffer) controller.enqueue(buffer);
+				}
+			});
+		}
+
 		async function synchronous() {
 
 			fetch('http://localhost:9000/git-info')
@@ -47,16 +63,19 @@
 
 		async function stream() {
 
-			fetch('http://localhost:9000/git-info', {
+			const response = await fetch('http://localhost:9000/git-info', {
 				headers: {
 					'Accept': 'application/x-ndjson'
 				}
-			})
-			.then(r => r.body
+			});
+
+			const reader = response.body
 				.pipeThrough(new TextDecoderStream())
+				.pipeThrough(splitStream('\n'))
 				.pipeThrough(parseJSON())
-				.getReader())
-			.then(parseStream);
+				.getReader();
+
+			parseStream(reader);
 		}
 
 		stream();
