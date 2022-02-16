@@ -2,6 +2,8 @@ package ch.kaoklai.reactiveprogrammingdemo.component.controller;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
+import java.time.Duration;
+
 import ch.kaoklai.reactiveprogrammingdemo.model.GitInfo;
 import ch.kaoklai.reactiveprogrammingdemo.service.GitInfoService;
 
@@ -10,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @SpringBootTest(webEnvironment = DEFINED_PORT)
@@ -19,25 +23,39 @@ public class WebfluxCachingTest {
 	private GitInfoService gitInfoService;
 
 	@Test
+	void test() {
+
+		Flux.range(1, 100)
+			.log()
+			.concatMap(x -> Mono.delay(Duration.ofMillis(100))) // simulate that processing takes time
+			.blockLast();
+
+		Flux.interval(Duration.ofMillis(1))
+			.log()
+			.concatMap(x -> Mono.delay(Duration.ofMillis(100))) // simulate that processing takes time
+			.blockLast();
+	}
+
+	@Test
 	void testCachingViaWebService() {
 
 		var client = WebClient.builder().baseUrl("http://localhost:9000").build();
 
 		retrieveGitInfo(client, 1);
 
-		retrieveGitInfo(client, 2);
+		//retrieveGitInfo(client, 2);
 
-		retrieveGitInfo(client, 3);
+		//retrieveGitInfo(client, 3);
 	}
 
 	private void retrieveGitInfo(WebClient client, int id) {
 
-		client.get().uri("/git-info")
+		client.get().uri("/persons")
 			.retrieve()
 			.bodyToFlux(GitInfo.class)
-			.doOnComplete(()  -> log.info("CALL [{}] All git info received!", id))
+			.log()
+			.limitRate(1000)
 			.collectList()
-			.doOnNext(c -> log.info("CALL [{}] number of info received [{}]", id, c.size()))
 			.block();
 	}
 

@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 @Service
 public class GitInfoService {
 
-	private Flux<GitInfo> gitInfos;
+	private final Flux<GitInfo> gitInfos;
 
 	public GitInfoService() {
 
@@ -33,7 +33,6 @@ public class GitInfoService {
 			.map(i -> ((GitInfo[]) i))
 			.flatMapMany(Flux::fromArray)
 			.cache();
-
 	}
 
 	public Flux<GitInfo> findGitInfo() {
