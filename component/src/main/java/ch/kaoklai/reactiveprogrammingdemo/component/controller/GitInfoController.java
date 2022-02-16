@@ -19,9 +19,10 @@ public class GitInfoController {
 	@GetMapping(path = "/git-info", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_NDJSON_VALUE })
 	public Flux<GitInfo> gitInfo() {
 
+		// ~11K elements
 		return gitInfoService.findGitInfo();
 
-		//return gitInfoService.findGitInfo().delayElements(Duration.ofMillis(100));
+		//return gitInfoService.findGitInfo().delayElements(Duration.ofMillis(10));
 	}
 
 }
