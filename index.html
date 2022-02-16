@@ -1,0 +1,70 @@
+<html>
+
+	<script>
+		function parseStream(reader) {
+
+			reader.read().then(
+				({ value, done }) => {
+					if (done) {
+						console.log("The stream was already closed!");
+					} else {
+						writeToDOM(value);
+						parseStream(reader);
+					}
+				},
+				e => console.error("The stream became errored and cannot be read from!", e)
+			);
+		}
+
+		function writeToDOM(value) {
+
+			targetDiv = document.getElementById("container");
+
+			let result = document.createElement('div');
+			result.innerHTML = `<div>ID: ${value.id} - Type: ${value.type} - Actor: ${value.actor.id} : ${value.actor.login} <img src="${value.actor.avatar_url}" style="width: 50px" loading="lazy"/></div><br>`;
+
+			// Prepend to the target
+			targetDiv.insertBefore(result, targetDiv.firstChild);
+		}
+
+		const parseJSON = () =>
+			new TransformStream({
+				transform(chunk, controller) {
+					controller.enqueue(JSON.parse(chunk));
+				}
+			});
+
+		async function synchronous() {
+
+			fetch('http://localhost:9000/git-info')
+				.then(r => r.json())
+				.then(r => {
+					for (i = 0; i < r.length; i++) {
+						writeToDOM(r[i]);
+					}
+				})
+		}
+
+		async function stream() {
+
+			fetch('http://localhost:9000/git-info', {
+				headers: {
+					'Accept': 'application/x-ndjson'
+				}
+			})
+			.then(r => r.body
+				.pipeThrough(new TextDecoderStream())
+				.pipeThrough(parseJSON())
+				.getReader())
+			.then(parseStream);
+		}
+
+		stream();
+
+	</script>
+
+	<div id="container">
+
+	</div>
+
+</html>
